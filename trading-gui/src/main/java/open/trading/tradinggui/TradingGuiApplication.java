@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -26,7 +27,7 @@ public class TradingGuiApplication extends Application {
                  -fx-background-radius: 9,8,5,4,3;
                  -fx-padding: 15 30 15 30;
                  -fx-font-family: "Segoe UI";
-                 -fx-font-size: 48px;
+                 -fx-font-size: 36px;
                  -fx-font-weight: bold;
                  -fx-text-fill: #f2f2f2;
                  -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);
@@ -42,12 +43,18 @@ public class TradingGuiApplication extends Application {
                 -fx-background-color: #202020;
                 """);
 
-        HBox hbox1 = createTile("EURUSD");
-
-        HBox hbox2 = createTile("GBPUSD");
-
-        tilePane.getChildren().add(hbox1);
-        tilePane.getChildren().add(hbox2);
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
+        tilePane.getChildren().add(createTile("EURUSD"));
+        tilePane.getChildren().add(createTile("EURDKK"));
 
         tilePane.setHgap(3);
         tilePane.setVgap(3);
@@ -59,38 +66,39 @@ public class TradingGuiApplication extends Application {
         stage.show();
     }
 
-    private static HBox createTile(String ccyPair) {
+    private static VBox createTile(String ccyPair) {
         HBox hbox = new HBox();
-        hbox.setStyle("-fx-background-color: #565656");
+        hbox.setStyle("""
+        -fx-background-color: #565656;
+        """);
         hbox.setPadding(new Insets(2));
 
-        VBox sell = new VBox();
         Button bid = new Button("1.10");
-        bid.setPrefSize(160, 120);
+        bid.setPrefSize(160, 110);
         bid.setStyle(BIG_BUTTON_CSS);
 
-        VBox buy = new VBox();
         Button ask = new Button("1.10");
-        ask.setPrefSize(160, 120);
+        ask.setPrefSize(160, 110);
         ask.setStyle(BIG_BUTTON_CSS);
 
         Label label = new Label(ccyPair);
-        label.setPadding(new Insets(2, 2, 2, 5));
+        label.setPadding(new Insets(4, 4, 4, 6));
         label.setStyle("""                 
                 -fx-font-family: "Segoe UI";
                 -fx-font-weight: bold;
                 -fx-text-fill: #03fcdb;
                 """);
 
-        sell.getChildren().add(label);
-        sell.getChildren().add(bid);
+        hbox.getChildren().add(bid);
+        hbox.getChildren().add(ask);
 
-        buy.getChildren().add(label);
-        buy.getChildren().add(ask);
-
-        hbox.getChildren().add(sell);
-        hbox.getChildren().add(buy);
-        return hbox;
+        VBox all = new VBox(label, hbox);
+        all.setStyle("""
+            -fx-background-color: #565656;
+            -fx-background-insets: 0,1,4,5,6;
+            -fx-background-radius: 9,8,5,4,3;
+            """);
+        return all;
     }
 
     public static void main(String[] args) {
