@@ -10,96 +10,65 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import open.trading.tradinggui.widget.BigTileFactory;
 
 import java.io.IOException;
 
 public class TradingGuiApplication extends Application {
-    public static final String BIG_BUTTON_CSS = """
-                -fx-background-color:
-                     linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%),
-                     linear-gradient(#020b02, #3a3a3a),
-                     linear-gradient(#9d9e9d 0%, #6b6a6b 20%, #343534 80%, #242424 100%),
-                     linear-gradient(#8a8a8a 0%, #6b6a6b 20%, #343534 80%, #262626 100%),
-                     linear-gradient(#777777 0%, #606060 50%, #505250 51%, #2a2b2a 100%);
-                 -fx-border-width: 0;
-                 -fx-background-insets: 0,1,4,5,6;
-                 -fx-background-radius: 9,8,5,4,3;
-                 -fx-padding: 15 30 15 30;
-                 -fx-font-family: "Segoe UI";
-                 -fx-font-size: 36px;
-                 -fx-font-weight: bold;
-                 -fx-text-fill: #f2f2f2;
-                 -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);
-                 -fx-effect: dropshadow( one-pass-box , black , 0, 0.0 , 0 , -1 );
-            """;
+
 
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(TradingGuiApplication.class.getResource("hello-view.fxml"));
-
+    public void start(Stage stage) {
+        System.setProperty("prism.lcdtext", "false");
+        VBox fullBlotterContainer = new VBox();
+        Scene scene = new Scene(fullBlotterContainer);
+        scene.getStylesheets().add("https://fonts.googleapis.com/css?family=JetBrains+Mono:600");
+        scene.getStylesheets().add("https://fonts.googleapis.com/css2?family=Merriweather:wght@700");
         TilePane tilePane = new TilePane();
         tilePane.setStyle("""
-                -fx-background-color: #202020;
+                -fx-background-color: #191038;
                 """);
 
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
-        tilePane.getChildren().add(createTile("EURUSD"));
-        tilePane.getChildren().add(createTile("EURDKK"));
+        Label label = new Label("Open Trading Blotter");
+        label.setStyle("""
+            -fx-font-family: 'Merriweather';
+            -fx-font-size: 36px;
+            -fx-text-fill: #d6d6d6;
+            -fx-font-smoothing-type: gray;
+        """);
+        label.setPadding(new Insets(5));
+        HBox titleBar = new HBox(label);
+        titleBar.setStyle("""
+                -fx-background-color: #191038;
+                """);
+        titleBar.setPadding(new Insets(16));
 
-        tilePane.setHgap(3);
-        tilePane.setVgap(3);
+        tilePane.getChildren().add(titleBar);
+        tilePane.getChildren().add(BigTileFactory.create("EURUSD").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("GBPUSD").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("EURJPY").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("USDCAD").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("EURAUD").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("USDJPY").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("EURDKK").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("EURSEK").getPane());
+        tilePane.getChildren().add(BigTileFactory.create("EURNOK").getPane());
+
+        tilePane.setHgap(4);
+        tilePane.setVgap(4);
         tilePane.setPadding(new Insets(20));
 
-        Scene scene = new Scene(tilePane);
+        fullBlotterContainer.getChildren().add(titleBar);
+        fullBlotterContainer.getChildren().add(tilePane);
+
         stage.setTitle("Open FX Trading");
         stage.setScene(scene);
         stage.show();
     }
 
-    private static VBox createTile(String ccyPair) {
-        HBox hbox = new HBox();
-        hbox.setStyle("""
-        -fx-background-color: #565656;
-        """);
-        hbox.setPadding(new Insets(2));
 
-        Button bid = new Button("1.10");
-        bid.setPrefSize(160, 110);
-        bid.setStyle(BIG_BUTTON_CSS);
-
-        Button ask = new Button("1.10");
-        ask.setPrefSize(160, 110);
-        ask.setStyle(BIG_BUTTON_CSS);
-
-        Label label = new Label(ccyPair);
-        label.setPadding(new Insets(4, 4, 4, 6));
-        label.setStyle("""                 
-                -fx-font-family: "Segoe UI";
-                -fx-font-weight: bold;
-                -fx-text-fill: #03fcdb;
-                """);
-
-        hbox.getChildren().add(bid);
-        hbox.getChildren().add(ask);
-
-        VBox all = new VBox(label, hbox);
-        all.setStyle("""
-            -fx-background-color: #565656;
-            -fx-background-insets: 0,1,4,5,6;
-            -fx-background-radius: 9,8,5,4,3;
-            """);
-        return all;
-    }
 
     public static void main(String[] args) {
         launch();

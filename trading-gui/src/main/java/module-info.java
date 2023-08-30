@@ -10,4 +10,6 @@ module open.trading.tradinggui {
         
     opens open.trading.tradinggui to javafx.fxml;
     exports open.trading.tradinggui;
+    exports open.trading.tradinggui.widget;
+    opens open.trading.tradinggui.widget to javafx.fxml;
 }
