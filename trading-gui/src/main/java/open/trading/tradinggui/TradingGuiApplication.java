@@ -20,11 +20,11 @@ public class TradingGuiApplication extends Application {
 
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage) throws InterruptedException {
         System.setProperty("prism.lcdtext", "false");
         VBox fullBlotterContainer = new VBox();
         Scene scene = new Scene(fullBlotterContainer);
-        scene.getStylesheets().add("https://fonts.googleapis.com/css?family=JetBrains+Mono:600");
+        scene.getStylesheets().add("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap");
         scene.getStylesheets().add("https://fonts.googleapis.com/css2?family=Merriweather:wght@700");
         TilePane tilePane = new TilePane();
         tilePane.setStyle("""
@@ -33,7 +33,7 @@ public class TradingGuiApplication extends Application {
 
         Label label = new Label("Open Trading Blotter");
         label.setStyle("""
-            -fx-font-family: 'Merriweather';
+            -fx-font-family: 'Roboto Condensed';
             -fx-font-size: 36px;
             -fx-text-fill: #d6d6d6;
             -fx-font-smoothing-type: gray;
