@@ -1,23 +1,27 @@
 package open.trading.tradinggui;
 
+import com.binance.connector.client.SpotClient;
+import com.binance.connector.client.impl.SpotClientImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import open.trading.tradinggui.widget.BigTileFactory;
 
-import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TradingGuiApplication extends Application {
 
+    private final Gson gson = new Gson();
 
     @Override
     public void start(Stage stage) throws InterruptedException {
@@ -33,11 +37,11 @@ public class TradingGuiApplication extends Application {
 
         Label label = new Label("Open Trading Blotter");
         label.setStyle("""
-            -fx-font-family: 'Roboto Condensed';
-            -fx-font-size: 36px;
-            -fx-text-fill: #d6d6d6;
-            -fx-font-smoothing-type: gray;
-        """);
+                    -fx-font-family: 'Roboto Condensed';
+                    -fx-font-size: 36px;
+                    -fx-text-fill: #d6d6d6;
+                    -fx-font-smoothing-type: gray;
+                """);
         label.setPadding(new Insets(5));
         HBox titleBar = new HBox(label);
         titleBar.setStyle("""
@@ -46,15 +50,23 @@ public class TradingGuiApplication extends Application {
         titleBar.setPadding(new Insets(16));
 
         tilePane.getChildren().add(titleBar);
-        tilePane.getChildren().add(BigTileFactory.create("EURUSD").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("GBPUSD").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("EURJPY").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("USDCAD").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("EURAUD").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("USDJPY").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("EURDKK").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("EURSEK").getPane());
-        tilePane.getChildren().add(BigTileFactory.create("EURNOK").getPane());
+
+        SpotClient client = new SpotClientImpl(System.getProperty("binance.api.key"),
+                System.getProperty("binance.api.secret"));
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        String result = client.createMargin().getAllIsolatedSymbols(parameters);
+        Type listType = new TypeToken<List<Symbol>>() {
+        }.getType();
+        List<Symbol> symbols = gson.fromJson(result, listType);
+        int counter = 0;
+        for (Symbol symbol : symbols) {
+            if (symbol.getSymbol().length() == 6 && (symbol.getSymbol().contains("BTC") || symbol.getSymbol().contains("ETH"))) {
+                tilePane.getChildren().add(BigTileFactory.create(symbol.getSymbol()).getPane());
+                if (counter++ == 16) {
+                    break;
+                }
+            }
+        }
 
         tilePane.setHgap(4);
         tilePane.setVgap(4);
@@ -68,6 +80,18 @@ public class TradingGuiApplication extends Application {
         stage.show();
     }
 
+    private static class Symbol {
+        private final String symbol;
+
+        private Symbol(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+
+    }
 
 
     public static void main(String[] args) {

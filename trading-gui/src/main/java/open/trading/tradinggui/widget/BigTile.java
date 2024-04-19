@@ -1,18 +1,17 @@
 package open.trading.tradinggui.widget;
 
+import com.binance.connector.client.WebSocketStreamClient;
+import com.binance.connector.client.impl.WebSocketStreamClientImpl;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import org.agrona.concurrent.UnsafeBuffer;
 
-import java.text.DecimalFormat;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import java.nio.ByteBuffer;
 
 public class BigTile {
     public static final String BIG_BUTTON_CSS = """
@@ -27,7 +26,7 @@ public class BigTile {
                  -fx-background-radius: 9,8,5,4,3;
                  -fx-padding: 20 30 20 30;
                  -fx-font-family: 'Roboto Condensed';
-                 -fx-font-size: 36px;
+                 -fx-font-size: 32px;
                  -fx-font-weight: bold;
                  -fx-text-fill: #f2f2f2;
                  -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);
@@ -35,37 +34,68 @@ public class BigTile {
             """;
 
     private final String instrument;
-    private Label label;
-
-    private Pane pane;
-
+    private final Pane pane;
     private final Button bid;
-
     private final Button ask;
+    private final UnsafeBuffer unsafeBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(128));
 
-    private final Random random;
-
-    BigTile(String instrument) throws InterruptedException {
+    BigTile(String instrument) {
         this.instrument = instrument;
-        this.ask = new Button("1.10");
-        this.bid = new Button("1.10");
+        this.ask = new Button();
+        this.bid = new Button();
         this.pane = createTile();
-        DecimalFormat df = new DecimalFormat("0.00");
-        this.random = new Random();
 
-        new Thread(() -> {
-            while (true) {
-                Platform.runLater(() -> {
-                    bid.setText(df.format(random.nextDouble()));
-                    ask.setText(df.format(random.nextDouble()));
-                });
-                try {
-                    TimeUnit.MILLISECONDS.sleep(random.nextInt() % 300);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+        WebSocketStreamClient wsStreamClient = new WebSocketStreamClientImpl();
+        wsStreamClient.bookTicker(instrument, ((event) -> {
+            unsafeBuffer.wrap(event.getBytes());
+            int i = 5;
+            StringBuffer bidBuffer = new StringBuffer();
+            StringBuffer askBuffer = new StringBuffer();
+            while (i < event.length()) {
+                if (unsafeBuffer.getByte(i) == '"'
+                        && unsafeBuffer.getByte(i + 1) == 'b'
+                        && unsafeBuffer.getByte(i + 2) == '"') {
+                    i+=5;
+                    while (i < event.length()) {
+                        if (unsafeBuffer.getByte(i) == '"'
+                                && unsafeBuffer.getByte(i + 1) == ','
+                                && unsafeBuffer.getByte(i + 2) == '"') {
+                            i+=5;
+                            break;
+                        }
+                        bidBuffer.append((char)unsafeBuffer.getByte(i));
+                        i++;
+                    }
+                    break;
                 }
+
+                i++;
             }
-        }).start();
+
+            while (i < event.length()) {
+                if (unsafeBuffer.getByte(i) == '"'
+                        && unsafeBuffer.getByte(i + 1) == 'a'
+                        && unsafeBuffer.getByte(i + 2) == '"') {
+                    i+=5;
+                    while (i < event.length()) {
+                        if (unsafeBuffer.getByte(i) == '"'
+                                && unsafeBuffer.getByte(i + 1) == ','
+                                && unsafeBuffer.getByte(i + 2) == '"') {
+                            break;
+                        }
+                        askBuffer.append((char)unsafeBuffer.getByte(i));
+                        i++;
+                    }
+                    break;
+                }
+                i++;
+            }
+
+            Platform.runLater(() -> {
+                bid.setText(bidBuffer.toString());
+                ask.setText(askBuffer.toString());
+            });
+        }));
 
 
     }
@@ -77,13 +107,13 @@ public class BigTile {
                 """);
         hbox.setPadding(new Insets(2));
 
-        bid.setPrefSize(160, 110);
+        bid.setPrefSize(300, 110);
         bid.setStyle(BIG_BUTTON_CSS);
 
-        ask.setPrefSize(160, 110);
+        ask.setPrefSize(300, 110);
         ask.setStyle(BIG_BUTTON_CSS);
 
-        label = new Label(this.instrument);
+        Label label = new Label(this.instrument);
         label.setPadding(new Insets(4, 8, 4, 6));
         label.setStyle("""                 
                 -fx-font-family: 'Roboto Condensed';
